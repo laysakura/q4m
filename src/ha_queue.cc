@@ -30,6 +30,7 @@ extern "C" {
 #include <vector>
 
 #define MYSQL_SERVER
+#define DBUG_OFF  // laysakura: ref to kamipo blog
 
 #include "mysql_version.h"
 
@@ -86,8 +87,8 @@ extern "C" {
 #include "adler32.c"
 
 extern uint build_table_filename(char *buff, size_t bufflen, const char *db,
-				 const char *table, const char *ext,
-				 uint flags);
+                          const char *table_name, const char *ext,
+                          uint flags, bool *was_truncated);
 
 
 using namespace std;
@@ -2706,7 +2707,8 @@ static queue_share_t* get_share_check(const char* db_table_name)
     return NULL;
   }
   
-  build_table_filename(path, FN_REFLEN - 1, db, tbl, "", 0);
+  bool was_truncated;
+  build_table_filename(path, FN_REFLEN - 1, db, tbl, "", 0, &was_truncated);
   queue_share_t *share = queue_share_t::get_share(path);
   if (share != NULL && ! share->init_fixed_fields()) {
     log("failed to initialize fixed field info.\n");
